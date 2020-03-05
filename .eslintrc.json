@@ -2,16 +2,24 @@
     "env": {
         "commonjs": true,
         "es6": true,
-        "node": true
+        "node": true,
+        "jest": true
     },
-    "extends": "eslint:recommended",
+    "plugins": [
+        "jest",
+        "jest-extended"
+    ],
+    "extends": ["eslint:recommended", "plugin:jest-extended/recommended"],
     "globals": {
         "Atomics": "readonly",
         "SharedArrayBuffer": "readonly"
     },
     "parserOptions": {
-        "ecmaVersion": 2018
+        "ecmaVersion": 2018,
+        "sourceType": "module"
     },
     "rules": {
+        "jest-extended/prefer-to-be-true": "warn",
+        "jest-extended/prefer-to-be-false": "error"
     }
 }
