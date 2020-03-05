@@ -1,13 +1,27 @@
-name: 'Wait'
-description: 'Wait a designated number of milliseconds'
+name: 'Get Strongest Version Label In PR'
+description: 'Returns string depending on the strongest exist label in PR'
 inputs:
-  milliseconds:  # id of input
-    description: 'number of milliseconds to wait'
+  GitHubToken:
+    description: 'GitHub Token for getting the pull request'
     required: true
-    default: '1000'
+
+  labels:
+    description: 'Wanted labels ORDERED from the most important to the less (Available formats explained in the README)'
+    required: true
+
 outputs:
-  time: # output will be available to future steps 
-    description: 'The message to output'
+  strongestLabelName:
+    description: 'The strongest label name exist (`input.minor` is `bump:minor` and `input.patch` is `bump:patch` so the `strongestLabel` is `bump:minor`)'
+
+  strongestLabelValue:
+    description: 'The value of strongestLabel (`input.major` is `bump:major` so the `strongestLabelText` is `major`)'
+
+  error:
+    description: 'No error - 0 | If the push wasnt from merging pull request - 1 | If no matching label - 2'
+
 runs:
   using: 'node12'
   main: 'dist/index.js'
+branding:
+  icon: 'check'
+  color: 'blue'

@@ -1,114 +1,94 @@
+# Get Strongest Version Label Exist
+> Generated from [Action - JavaScript Action template](https://github.com/actions/javascript-action)
 
-<p align="center">
-  <a href="https://github.com/actions/javascript-action/actions"><img alt="javscript-action status" src="https://github.com/actions/javascript-action/workflows/units-test/badge.svg"></a>
-</p>
+Do you want to get the strongest version label in PR?
 
-# Create a JavaScript Action
+## Inputs
+- `labels` (look below for the labels format)
+- `GitHubToken` (set to `secrets.GITHUB_TOKEN`)
+  >  Provided by GitHub Actions
 
-Use this template to bootstrap the creation of a JavaScript action.:rocket:
+#### Labels format
+You can pass the labels input at one of 3 format 
 
-This template includes tests, linting, a validation workflow, publishing, and versioning guidance.  
+> Before enplaning the formats there are 2 concepts you need to know
+> 1. `labelName` The name of the label (Mandatory)
+> 2. `value` The value of that label (Optional - if not provided, the `labelName` will be the value)
 
-If you are new, there's also a simpler introduction.  See the [Hello World JavaScript Action](https://github.com/actions/hello-world-javascript-action)
+> One more note: Spaces are trimmed
 
-## Create an action from this template
+##### JSON - Array of objects
+> For the JSON to work, it must be `stringify`
 
-Click the `Use this Template` and provide the new repo details for your action
+Array of object, each object have: `labelName` and `value` (as explained before)
 
-## Code in Master
-
-Install the dependencies  
-```bash
-$ npm install
-```
-
-Run the tests :heavy_check_mark:  
-```bash
-$ npm test
-
- PASS  ./index.test.js
-  ✓ throws invalid number (3ms)
-  ✓ wait 500 ms (504ms)
-  ✓ test runs (95ms)
-
-...
-```
-
-## Change action.yml
-
-The action.yml contains defines the inputs and output for your action.
-
-Update the action.yml with your name, description, inputs and outputs for your action.
-
-See the [documentation](https://help.github.com/en/articles/metadata-syntax-for-github-actions)
-
-## Change the Code
-
-Most toolkit and CI/CD operations involve async operations so the action is run in an async function.
-
-```javascript
-const core = require('@actions/core');
-...
-
-async function run() {
-  try { 
-      ...
-  } 
-  catch (error) {
-    core.setFailed(error.message);
+**Example:**
+```json
+[
+  {
+    "labelName": "your-label-name",
+    "value": "the value you want to get if that label is choose"
+  },
+  {
+    "labelName": "your-label-name-which-is-also-the-value"
   }
-}
-
-run()
+]
 ```
 
-See the [toolkit documentation](https://github.com/actions/toolkit/blob/master/README.md#packages) for the various packages.
+##### JSON - Array of Arrays
+> For the JSON to work, it must be `stringify`
 
-## Package for distribution
+Array of arrays, each sub-array have 1 or 2 items:
+- 1st item is the `labelName`
+- 2nd item is the `value`
 
-GitHub Actions will run the entry point from the action.yml. Packaging assembles the code into one file that can be checked in to Git, enabling fast and reliable execution and preventing the need to check in node_modules.
-
-Actions are run from GitHub repos.  Packaging the action will create a packaged action in the dist folder.
-
-Run package
-
-```bash
-npm run package
+**Example:**
+```json
+[
+  ["your-label-name", "the value you want to get if that label is choose"],
+  ["your-label-name-which-is-also-the-value"]
+]
 ```
 
-Since the packaged index.js is run from the dist folder.
+##### Multiline String
+> For using multiline, use the `|` character
 
-```bash
-git add dist
+String that each line is item that have 2 parts divided by `,` (comma):
+- 1st part is the `labelName`
+- 2nd part is the `value`
+
+**Example:**
+```
+your-label-name, the value you want to get if that label is choose
+your-label-name-which-is-also-the-value
 ```
 
-## Create a release branch
+## Outputs
+```yaml
+strongestLabelName: The strongest label name exist (`input.minor` is `bump:minor` and `input.patch` is `bump:patch` so the `strongestLabel` is `bump:minor`)
 
-Users shouldn't consume the action from master since that would be latest code and actions can break compatibility between major versions.
+strongestLabelValue: The value of strongestLabel (`input.major` is `bump:major` so the `strongestLabelText` is `major`)
 
-Checkin to the v1 release branch
-
-```bash
-$ git checkout -b v1
-$ git commit -a -m "v1 release"
+error: 0 for No error | 1 for no pull request (on push without pull request associated with that commit) | 2 for no matching label 
 ```
 
-```bash
-$ git push origin v1
-```
-
-Your action is now published! :rocket: 
-
-See the [versioning documentation](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md)
-
-## Usage
-
-You can now consume the action by referencing the v1 branch
+Example:
 
 ```yaml
-uses: actions/javascript-action@v1
-with:
-  milliseconds: 1000
-```
+name: CI
+on: [push]
 
-See the [actions tab](https://github.com/actions/javascript-action/actions) for runs of this action! :rocket:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: rluvaton/get-strongest-label-in-pr-action@master
+      id: strongestLabel
+      with:
+        GitHubToken: ${{ secrets.GITHUB_TOKEN }} # Provided by GitHub Actions
+        labels: "[[\"bump:major\", \"major\"],[\"bump:minor\", \"minor\"],[\"bump:patch\", \"patch\"]]"
+
+    - name: Echo Label if it's merged pull request commit
+      if: steps.strongestLabel.outputs.error == 0 # No Error
+      run: echo ${{steps.strongestLabel.outputs.strongestLabelValue}} 
+```
